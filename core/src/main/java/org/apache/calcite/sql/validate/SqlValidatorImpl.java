@@ -244,6 +244,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   protected final TimeFrameSet timeFrameSet;
 
+  protected final SystemColumnSet systemColumnSet;
+
   /**
    * Map of derived RelDataType for each node. This is an IdentityHashMap
    * since in some cases (such as null literals) we need to discriminate by
@@ -302,6 +304,9 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     this.timeFrameSet =
         requireNonNull(typeSystem.deriveTimeFrameSet(TimeFrames.CORE),
             "timeFrameSet");
+    this.systemColumnSet =
+        requireNonNull(typeSystem.deriveSystemColumnSet(SystemColumnSet.builder(typeFactory).build(), typeFactory),
+            "systemColumnSet");
     this.config = requireNonNull(config, "config");
 
     // It is assumed that unknown type is nullable by default
@@ -368,6 +373,10 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   @Override public TimeFrameSet getTimeFrameSet() {
     return timeFrameSet;
+  }
+
+  @Override public SystemColumnSet getSystemColumnSet() {
+    return systemColumnSet;
   }
 
   @Override public SqlNodeList expandStar(
@@ -652,7 +661,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
         } else {
           final SqlNode from = SqlNonNullableAccessors.getNode(child);
           final SqlValidatorNamespace fromNs = getNamespaceOrThrow(from, scope);
-          final RelDataType rowType = fromNs.getRowType();
+          final RelDataType rowType = fromNs.getRowTypeSansSystemColumns();
           for (RelDataTypeField field : rowType.getFieldList()) {
             String columnName = field.getName();
 
@@ -661,7 +670,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
                 new SqlIdentifier(
                     ImmutableList.of(child.name, columnName),
                     startPosition);
-            // Don't add expanded rolled up columns
+
+            // Don't add expanded rolled up columns or system columns
             if (!isRolledUpColumn(exp, scope)) {
               addOrExpandField(
                       selectItems,
@@ -6176,7 +6186,11 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
   }
 
   @Override public boolean isSystemField(RelDataTypeField field) {
-    return false;
+    SystemColumnSet systemColumnSet = getSystemColumnSet();
+    // Use the Default Table interface for this comparison, as we're checking
+    // for system columns common across all implementations
+    RelDataType systemColumns = systemColumnSet.get(Table.class);
+    return systemColumns.getFieldList().contains(field);
   }
 
   @Override public List<@Nullable List<String>> getFieldOrigins(SqlNode sqlQuery) {

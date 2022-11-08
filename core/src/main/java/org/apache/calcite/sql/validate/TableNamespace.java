@@ -57,12 +57,10 @@ class TableNamespace extends AbstractNamespace {
   }
 
   @Override protected RelDataType validateImpl(RelDataType targetRowType) {
-    if (extendedFields.isEmpty()) {
-      return table.getRowType();
-    }
     final RelDataTypeFactory.Builder builder =
         validator.getTypeFactory().builder();
     builder.addAll(table.getRowType().getFieldList());
+    builder.addAll(getSystemColumns().getFieldList());
     builder.addAll(extendedFields);
     return builder.build();
   }
@@ -165,5 +163,18 @@ class TableNamespace extends AbstractNamespace {
         }
       }
     }
+  }
+
+  private RelDataType getSystemColumns() {
+    SystemColumnSet systemColumnSet = validator.getSystemColumnSet();
+    return systemColumnSet.get(table.table().getClass());
+  }
+
+  @Override public RelDataType getRowTypeSansSystemColumns() {
+    return validator.getTypeFactory()
+        .builder()
+        .addAll(table.getRowType().getFieldList())
+        .addAll(extendedFields)
+        .build();
   }
 }

@@ -787,6 +787,8 @@ public interface SqlValidator {
   /** Returns the set of allowed time frames. */
   TimeFrameSet getTimeFrameSet();
 
+  SystemColumnSet getSystemColumnSet();
+
   /** Validates a time frame.
    *
    * <p>A time frame is either a built-in time frame based on a time unit such

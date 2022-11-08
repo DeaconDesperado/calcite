@@ -17,6 +17,7 @@
 package org.apache.calcite.rel.type;
 
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.validate.SystemColumnSet;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -99,5 +100,10 @@ public class DelegatingTypeSystem implements RelDataTypeSystem {
 
   @Override public TimeFrameSet deriveTimeFrameSet(TimeFrameSet frameSet) {
     return typeSystem.deriveTimeFrameSet(frameSet);
+  }
+
+  @Override public SystemColumnSet deriveSystemColumnSet(final SystemColumnSet systemColumnSet,
+      final RelDataTypeFactory typeFactory) {
+    return typeSystem.deriveSystemColumnSet(systemColumnSet, typeFactory);
   }
 }

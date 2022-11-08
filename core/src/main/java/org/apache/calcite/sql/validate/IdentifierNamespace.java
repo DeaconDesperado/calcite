@@ -281,4 +281,8 @@ public class IdentifierNamespace extends AbstractNamespace {
     }
     return table.supportsModality(modality);
   }
+
+  @Override public RelDataType getRowTypeSansSystemColumns() {
+    return resolvedNamespace.getRowTypeSansSystemColumns();
+  }
 }

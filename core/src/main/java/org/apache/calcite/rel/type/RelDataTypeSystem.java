@@ -18,6 +18,7 @@ package org.apache.calcite.rel.type;
 
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.sql.validate.SystemColumnSet;
 import org.apache.calcite.util.Glossary;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -423,5 +424,9 @@ public interface RelDataTypeSystem {
    */
   default TimeFrameSet deriveTimeFrameSet(TimeFrameSet frameSet) {
     return frameSet;
+  }
+
+  default SystemColumnSet deriveSystemColumnSet(SystemColumnSet systemColumnSet, RelDataTypeFactory typeFactory){
+    return systemColumnSet;
   }
 }
